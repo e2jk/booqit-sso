@@ -17,29 +17,53 @@ function getURLParameter(name) {
     return parameterValue;
 }
 
-function getParams(params) {
+function getParam(paramName, params) {
+    var parameter = getURLParameter(paramName);
+    // console.log(paramName, parameter);
+    if (parameter) {
+        params.set(paramName, parameter);
+    }
+}
+
+function getParams() {
     "use strict";
-    console.log("getParams");
+    console.log("getParams()");
+    let params = new Map()
+    getParam("apikey", params);
+    if (!params.has("apikey")) {
+        console.error("API key not provided, exiting...");
+    } else {
+        getParam("lastName", params);
+        getParam("firstName", params);
+
+        console.log("Received parameters:");
+        for (let [key, value] of params) {
+            console.log(key + ' = ' + value)
+        }
+    }
+    return params;
 }
 
 function getSSOLink(params) {
     "use strict";
-    console.log("getSSOLink");
+    console.log("getSSOLink()");
 }
 
-function redirectToBooqit(params) {
+function redirectToBooqit() {
     "use strict";
-    console.log("redirectToBooqit");
+    console.log("redirectToBooqit()");
 }
 
 function main(){
     "use strict";
     console.log("starting");
-    getParams();
+    var params = getParams();
     
-    getSSOLink();
+    if (params.has("apikey")) {
+        getSSOLink(params);
 
-    redirectToBooqit();
+        redirectToBooqit();
+    }
 
     console.log("finished");
 }
