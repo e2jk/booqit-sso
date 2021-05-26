@@ -47,6 +47,16 @@ function getParams() {
 function getSSOLink(params) {
     "use strict";
     console.log("getSSOLink()");
+
+    const Http = new XMLHttpRequest();
+    // const url='https://jsonplaceholder.typicode.com/posts';
+    const url="https://api.staging.booqitapp.com/v1/sso";
+    Http.open("POST", url);
+    Http.send();
+
+    Http.onreadystatechange = (e) => {
+        console.log(Http.responseText)
+    }
 }
 
 function redirectToBooqit() {
