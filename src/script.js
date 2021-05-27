@@ -31,7 +31,9 @@ function getParams() {
     let params = new Map()
     getParam("apikey", params);
     if (!params.has("apikey")) {
-        console.error("API key not provided, exiting...");
+        const errorMessage = "API key not provided.<br>Please contact IT support."
+        console.error(errorMessage);
+        updatePage(errorMessage);
     } else {
         getParam("lastName", params);
         getParam("firstName", params);
@@ -42,6 +44,10 @@ function getParams() {
         }
     }
     return params;
+}
+
+function updatePage(content) {
+    document.getElementById('content').innerHTML = content;
 }
 
 function getSSOLink(params) {
@@ -56,6 +62,7 @@ function getSSOLink(params) {
 
     xhr.onreadystatechange = (e) => {
         if(xhr.readyState === XMLHttpRequest.DONE) {
+            const status = xhr.status;
             if (status === 0 || (status >= 200 && status < 400)) {
                 // The request has been completed successfully
                 console.log(xhr.responseText);
@@ -63,8 +70,13 @@ function getSSOLink(params) {
                 redirectToBooqit();
               } else {
                 // There has been an error with the request!
-                const errorMessage = "Error, status code " + status + ", message '" + xhr.responseText + "', exiting...";
+                let extraText = "";
+                if (status === 401) {
+                    extraText = " Please check if the provided API key is valid.";
+                }
+                const errorMessage = "Error, status code " + status + ", message '" + xhr.responseText + "'." + extraText + "<br>Please contact IT support.";
                 console.error(errorMessage);
+                updatePage(errorMessage);
               }
         }
     }
