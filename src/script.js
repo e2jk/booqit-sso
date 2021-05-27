@@ -48,14 +48,25 @@ function getSSOLink(params) {
     "use strict";
     console.log("getSSOLink()");
 
-    const Http = new XMLHttpRequest();
-    // const url='https://jsonplaceholder.typicode.com/posts';
+    const xhr = new XMLHttpRequest();
     const url="https://api.staging.booqitapp.com/v1/sso";
-    Http.open("POST", url);
-    Http.send();
+    xhr.open("POST", url);
+    xhr.setRequestHeader('Authorization', 'key ' + params.get("apikey") );
+    xhr.send();
 
-    Http.onreadystatechange = (e) => {
-        console.log(Http.responseText)
+    xhr.onreadystatechange = (e) => {
+        if(xhr.readyState === XMLHttpRequest.DONE) {
+            if (status === 0 || (status >= 200 && status < 400)) {
+                // The request has been completed successfully
+                console.log(xhr.responseText);
+
+                redirectToBooqit();
+              } else {
+                // There has been an error with the request!
+                const errorMessage = "Error, status code " + status + ", message '" + xhr.responseText + "', exiting...";
+                console.error(errorMessage);
+              }
+        }
     }
 }
 
@@ -71,8 +82,6 @@ function main(){
     
     if (params.has("apikey")) {
         getSSOLink(params);
-
-        redirectToBooqit();
     }
 
     console.log("finished");
