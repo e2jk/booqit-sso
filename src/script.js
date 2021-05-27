@@ -75,10 +75,22 @@ function getSSOLink(params) {
             const status = xhr.status;
             if (status === 0 || (status >= 200 && status < 400)) {
                 // The request has been completed successfully
-                console.log(xhr.responseText);
-
-                redirectToBooqit();
-              } else {
+                try {
+                    var response = JSON.parse(xhr.responseText);
+                } catch (e) {
+                    const errorMessage = "Error, could not parse the JSON content sent by the server.<br>responseText: '" + xhr.responseText + "'<br>Exception: '" + e + "'<br>Please contact IT support.";
+                    console.error(errorMessage);
+                    updatePage(errorMessage);
+                }
+                if(response.hasOwnProperty("data") && response.data.hasOwnProperty("ssoUrl")) {
+                    const ssoUrl = response.data.ssoUrl;
+                    redirectToBooqit(ssoUrl);
+                } else {
+                    const errorMessage = "Error, could not identify the ssoUrl.<br>responseText: '" + xhr.responseText + "'<br>Please contact IT support.";
+                    console.error(errorMessage);
+                    updatePage(errorMessage);
+                }
+            } else {
                 // There has been an error with the request!
                 let extraText = "";
                 if (status === 401) {
@@ -87,14 +99,16 @@ function getSSOLink(params) {
                 const errorMessage = "Error, status code " + status + ", message '" + xhr.responseText + "'." + extraText + "<br>Please contact IT support.";
                 console.error(errorMessage);
                 updatePage(errorMessage);
-              }
+            }
         }
     }
 }
 
-function redirectToBooqit() {
+function redirectToBooqit(ssoUrl) {
     "use strict";
-    console.log("redirectToBooqit()");
+    console.log("redirectToBooqit() -> " + ssoUrl);
+    const urlMessage = "SSO Successful, redirecting to <a href='" + ssoUrl + "'>" + ssoUrl + "</a>";
+    updatePage(urlMessage);
 }
 
 function main(){
