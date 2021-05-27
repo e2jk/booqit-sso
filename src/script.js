@@ -1,5 +1,8 @@
 /*jslint browser: true, white */
 
+const mandatoryParameters = ["apikey", "acceptedTermsOfUse", "internalUserId", "firstName", "lastName", "language"];
+const supportedLanguages = ['en', 'fr', 'nl'];
+
 // Inspired from https://stackoverflow.com/a/11582513/185053 , modified for JSLint
 function getURLParameter(name) {
     "use strict";
@@ -29,19 +32,35 @@ function getParams() {
     "use strict";
     console.log("getParams()");
     let params = new Map()
-    getParam("apikey", params);
-    if (!params.has("apikey")) {
-        const errorMessage = "API key not provided.<br>Please contact IT support."
-        console.error(errorMessage);
-        updatePage(errorMessage);
-    } else {
-        getParam("lastName", params);
-        getParam("firstName", params);
 
-        console.log("Received parameters:");
-        for (let [key, value] of params) {
-            console.log(key + ' = ' + value)
+    // Required parameters
+    let errorMessage = "";
+    for (let i = 0; i < mandatoryParameters.length; i++) {
+        let paramName = mandatoryParameters[i];
+        getParam(paramName, params);
+        if (!params.has(paramName)) {
+            errorMessage += "<li>Mandatory parameter '" + paramName + "' was not provided.</li>";
         }
+    }
+    if (params.has("acceptedTermsOfUse") && params.get("acceptedTermsOfUse") !== "true") {
+        errorMessage += "<li>Mandatory parameter 'acceptedTermsOfUse' must have the value 'true', the provided value '" + params.get("acceptedTermsOfUse") + "' is not supported.</li>";
+    }
+    if (supportedLanguages.indexOf(params.get("language")) === -1) {
+        errorMessage += "<li>Mandatory parameter 'language' must be one of 'en', 'fr' or 'nl', the provided value '" + params.get("language") + "' is not supported.</li>";
+    }
+    if (errorMessage) {
+        console.error(errorMessage);
+        updatePage("<ul>" + errorMessage + "</ul><br>Please contact IT support.");
+        return null;
+    }
+
+    // Optional parameters
+    getParam("lastName", params);
+    getParam("firstName", params);
+
+    console.log("Received parameters:");
+    for (let [key, value] of params) {
+        console.log(key + ' = ' + value)
     }
     return params;
 }
@@ -56,11 +75,11 @@ function getSSOLink(params) {
 
     //TODO: pass these as required parameters
     let payload = {
-        "acceptedTermsOfUse": true,
-        "internalUserId": "testUserID",
-        "firstName": "testFirstName",
-        "lastName": "testLastName",
-        "language": "en"
+        "acceptedTermsOfUse": params.get("acceptedTermsOfUse") === "true",
+        "internalUserId": params.get("internalUserId"),
+        "firstName": params.get("firstName"),
+        "lastName": params.get("lastName"),
+        "language": params.get("language")
     };
 
     const xhr = new XMLHttpRequest();
@@ -115,9 +134,9 @@ function main(){
     "use strict";
     console.log("starting");
     var params = getParams();
-    
-    if (params.has("apikey")) {
-        getSSOLink(params);
+
+    if (params) {
+        getSSOLink(params);    
     }
 
     console.log("finished");
