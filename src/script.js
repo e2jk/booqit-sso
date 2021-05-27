@@ -54,11 +54,21 @@ function getSSOLink(params) {
     "use strict";
     console.log("getSSOLink()");
 
+    //TODO: pass these as required parameters
+    let payload = {
+        "acceptedTermsOfUse": true,
+        "internalUserId": "testUserID",
+        "firstName": "testFirstName",
+        "lastName": "testLastName",
+        "language": "en"
+    };
+
     const xhr = new XMLHttpRequest();
     const url="https://api.staging.booqitapp.com/v1/sso";
     xhr.open("POST", url);
     xhr.setRequestHeader('Authorization', 'key ' + params.get("apikey") );
-    xhr.send();
+    xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+    xhr.send(JSON.stringify(payload));
 
     xhr.onreadystatechange = (e) => {
         if(xhr.readyState === XMLHttpRequest.DONE) {
