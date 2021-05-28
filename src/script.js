@@ -204,7 +204,7 @@ function getSSOLink(params) {
 function redirectToBooqit(ssoUrl) {
     "use strict";
     log("redirectToBooqit() -> " + ssoUrl);
-    const urlMessage = "SSO Successful, redirecting to <a href='" + ssoUrl + "'>" + ssoUrl + "</a>";
+    const urlMessage = "SSO Successful, redirecting to <a href='" + ssoUrl + "' target='_blank'>" + ssoUrl + "</a>";
     updatePage(urlMessage);
 }
 
