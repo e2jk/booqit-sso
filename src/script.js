@@ -3,7 +3,8 @@
 const mandatoryParameters = ["apikey", "acceptedTermsOfUse", "internalUserId", "userFirstName", "userLastName", "language"];
 const supportedLanguages = ['en', 'fr', 'nl'];
 const passengerParameters = ["passengerFirstName", "passengerLastName", "passengerRrNumber", "passengerInternalNumber", "passengerDateOfBirth", "passengerPhoneNumber", "passengerEmail", "passengerMutuality"];
-const optionalParameters = [].concat(["destinationUrl"], passengerParameters);
+const specificsParameters = ["specificsPassengers", "specificsOxygen", "specificsPerfusion", "specificsInfectionRisk", "specificsWithProbe"];
+const optionalParameters = [].concat(["destinationUrl"], passengerParameters, specificsParameters);
 
 // Inspired from https://stackoverflow.com/a/11582513/185053 , modified for JSLint
 function getURLParameter(name) {
@@ -89,6 +90,7 @@ function getSSOLink(params) {
     // Handle the optional parameters
     let numOptionalParameters = 0;
     let numPassengerParameters = 0;
+    let numSpecificsParameters = 0;
     for (let i = 0; i < optionalParameters.length; i++) {
         let paramName = optionalParameters[i];
         console.log(paramName, params.get(paramName));
@@ -96,6 +98,9 @@ function getSSOLink(params) {
             numOptionalParameters++;
             if (paramName.startsWith("passenger")) {
                 numPassengerParameters++;
+            }
+            if (paramName.startsWith("specifics")) {
+                numSpecificsParameters++;
             }
         }
     }
@@ -110,15 +115,26 @@ function getSSOLink(params) {
                 "request": {
                 }
             };
-            // Handle passenger parameters
+            // Handle "passenger" parameters
             if (numPassengerParameters > 0) {
                 requestPayload.request.passenger = {};
+                for (let i = 0; i < passengerParameters.length; i++) {
+                    let paramName = passengerParameters[i];
+                    if (params.get(paramName)){
+                        let elementName = paramName.substring(9, 10).toLowerCase() + paramName.substring(10);
+                        requestPayload.request.passenger[elementName] = params.get(paramName);
+                    }
+                }
             }
-            for (let i = 0; i < passengerParameters.length; i++) {
-                let paramName = passengerParameters[i];
-                if (params.get(paramName)){
-                    let elementName = paramName.substring(9, 10).toLowerCase() + paramName.substring(10);
-                    requestPayload.request.passenger[elementName] = params.get(paramName);
+            // Handle "specifics" parameters
+            if (numSpecificsParameters > 0) {
+                requestPayload.request.specifics = {};
+                for (let i = 0; i < specificsParameters.length; i++) {
+                    let paramName = specificsParameters[i];
+                    if (params.get(paramName)){
+                        let elementName = paramName.substring(9, 10).toLowerCase() + paramName.substring(10);
+                        requestPayload.request.specifics[elementName] = params.get(paramName);
+                    }
                 }
             }
             console.log(requestPayload);
