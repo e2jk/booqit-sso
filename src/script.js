@@ -1,8 +1,8 @@
 /*jslint browser: true, white */
 
-const mandatoryParameters = ["apikey", "acceptedTermsOfUse", "internalUserId", "firstName", "lastName", "language"];
+const mandatoryParameters = ["apikey", "acceptedTermsOfUse", "internalUserId", "userFirstName", "userLastName", "language"];
 const supportedLanguages = ['en', 'fr', 'nl'];
-const optionalParameters = ["destinationUrl", "lastName", "firstName"];
+const optionalParameters = ["destinationUrl", "passengerFirstName", "passengerLastName"];
 
 // Inspired from https://stackoverflow.com/a/11582513/185053 , modified for JSLint
 function getURLParameter(name) {
@@ -80,28 +80,46 @@ function getSSOLink(params) {
     let payload = {
         "acceptedTermsOfUse": params.get("acceptedTermsOfUse") === "true",
         "internalUserId": params.get("internalUserId"),
-        "firstName": params.get("firstName"),
-        "lastName": params.get("lastName"),
+        "firstName": params.get("userFirstName"),
+        "lastName": params.get("userLastName"),
         "language": params.get("language")
     };
-    
+
     // Handle the optional parameters
-    let optionalParametersPresent = false;
+    let numOptionalParametersPresent = 0;
     for (let i = 0; i < optionalParameters.length; i++) {
         let paramName = optionalParameters[i];
-        if (params.get(paramName) !== undefined){
-            optionalParametersPresent = true;
-            break;
+        console.log(paramName, params.get(paramName));
+        if (params.get(paramName)){
+            numOptionalParametersPresent += 1;
         }
     }
-    if (optionalParametersPresent) {
-        // Default destinationUrl if not provided
+    if (numOptionalParametersPresent > 0) {
         // We assume that additional parameters are meant to pass info for a new trip, not for restrictions (currently unsupported)
-        let destinationUrl = params.get("destinationUrl");
-        if (!destinationUrl) {
-            destinationUrl = "/trips?new=";
+        let destinationUrl = "";
+        if (params.get("destinationUrl") && numOptionalParametersPresent === 1) {
+            // Only respect the destinationUrl if it is the only optional parameter passed, otherwise the rest of the parameters need to be passed as extra payload in the return URL
+            destinationUrl = params.get("destinationUrl");
+        } else {
+            let requestPayload = {
+                "request": {
+                }
+            };
+            if (params.get("passengerFirstName") || params.get("passengerLastName")) {
+                requestPayload.request.passenger = {};
+            }
+            if (params.get("passengerFirstName")) {
+                requestPayload.request.passenger.firstName = params.get("passengerFirstName");
+            }
+            if (params.get("passengerLastName")) {
+                requestPayload.request.passenger.lastName = params.get("passengerLastName");
+            }
+            console.log(requestPayload);
+            // Encode the optional parameters into the destination URL
+            destinationUrl = "/trips?new=" + encodeURI(JSON.stringify(requestPayload));
         }
         console.log("destinationUrl ", destinationUrl);
+
 
         // Now that the final destinationUrl is generated, add it to the payload
         payload.destinationUrl = destinationUrl;
