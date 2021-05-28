@@ -14,6 +14,10 @@ var debugMode = false;
 function log(value) {
     if (debugMode) {
         console.log(value);
+        if (!(typeof value === 'string' || value instanceof String)) {
+            value = JSON.stringify(value);
+        }
+        document.getElementById('debug').innerHTML = document.getElementById('debug').innerHTML + "<br><br>" + value;
     }
 }
 
