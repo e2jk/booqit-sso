@@ -2,11 +2,13 @@
 
 const mandatoryParameters = ["apikey", "acceptedTermsOfUse", "internalUserId", "userFirstName", "userLastName", "language"];
 const supportedLanguages = ['en', 'fr', 'nl'];
-const passengerParameters = ["passengerFirstName", "passengerLastName", "passengerRrNumber", "passengerInternalNumber", "passengerDateOfBirth", "passengerPhoneNumber", "passengerEmail", "passengerMutuality"];
-const specificsParameters = ["specificsPassengers", "specificsOxygen", "specificsPerfusion", "specificsInfectionRisk", "specificsWithProbe"];
-const paymentParameters = ["paymentInvoiceTo", "paymentName", "paymentInvoiceAddress"];
+const optParameters = {
+    "passenger": ["passengerFirstName", "passengerLastName", "passengerRrNumber", "passengerInternalNumber", "passengerDateOfBirth", "passengerPhoneNumber", "passengerEmail", "passengerMutuality"],
+    "specifics": ["specificsPassengers", "specificsOxygen", "specificsPerfusion", "specificsInfectionRisk", "specificsWithProbe"],
+    "payment": ["paymentInvoiceTo", "paymentName", "paymentInvoiceAddress"]
+};
 const otherOptParameters = ["transportType", "reason", "dateTime", "dateTimeEnd", "operationDate", "pickup", "dropOff", "info", "vehicleType", "vehicleSpecification", "proOrVolunteer"];
-const optionalParameters = [].concat(["destinationUrl", "debug"], passengerParameters, specificsParameters, paymentParameters, otherOptParameters);
+const optionalParameters = [].concat(["destinationUrl", "debug"], optParameters["passenger"], optParameters["specifics"], optParameters["payment"], otherOptParameters);
 var debugMode = false;
 
 function log(value) {
@@ -97,29 +99,25 @@ function getSSOLink(params) {
     };
 
     // Handle the optional parameters
-    let numOptionalParameters = 0;
-    let numPassengerParameters = 0;
-    let numSpecificsParameters = 0;
-    let numPaymentParameters = 0;
+    // Count how many parameters of each type have been passed
+    let numParameters = {"optional": 0, "passenger": 0, "specifics": 0, "payment": 0};
+    let parameterTypes = ["passenger", "specifics", "payment"];
     for (let i = 0; i < optionalParameters.length; i++) {
         let paramName = optionalParameters[i];
         if (params.get(paramName)){
-            numOptionalParameters++;
-            if (paramName.startsWith("passenger")) {
-                numPassengerParameters++;
-            }
-            if (paramName.startsWith("specifics")) {
-                numSpecificsParameters++;
-            }
-            if (paramName.startsWith("payment")) {
-                numPaymentParameters++;
+            numParameters["optional"]++;
+            for (let j = 0; j < parameterTypes.length; j++) {
+                if (paramName.startsWith(parameterTypes[j])) {
+                    numParameters[parameterTypes[j]]++;
+                    break;
+                }
             }
         }
     }
-    if (numOptionalParameters > 0) {
+    if (numParameters["optional"] > 0) {
         // We assume that additional parameters are meant to pass info for a new trip, not for restrictions (currently unsupported)
         let destinationUrl = "";
-        if (params.get("destinationUrl") && numOptionalParameters === 1) {
+        if (params.get("destinationUrl") && numParameters["optional"] === 1) {
             // Only respect the destinationUrl if it is the only optional parameter passed, otherwise the rest of the parameters need to be passed as extra payload in the return URL
             destinationUrl = params.get("destinationUrl");
         } else {
@@ -127,36 +125,18 @@ function getSSOLink(params) {
                 "request": {
                 }
             };
-            // Handle "passenger" parameters
-            if (numPassengerParameters > 0) {
-                requestPayload.request.passenger = {};
-                for (let i = 0; i < passengerParameters.length; i++) {
-                    let paramName = passengerParameters[i];
-                    if (params.get(paramName)){
-                        let elementName = paramName.substring(9, 10).toLowerCase() + paramName.substring(10);
-                        requestPayload.request.passenger[elementName] = params.get(paramName);
-                    }
-                }
-            }
-            // Handle "specifics" parameters
-            if (numSpecificsParameters > 0) {
-                requestPayload.request.specifics = {};
-                for (let i = 0; i < specificsParameters.length; i++) {
-                    let paramName = specificsParameters[i];
-                    if (params.get(paramName)){
-                        let elementName = paramName.substring(9, 10).toLowerCase() + paramName.substring(10);
-                        requestPayload.request.specifics[elementName] = params.get(paramName);
-                    }
-                }
-            }
-            // Handle "payment" parameters
-            if (numPaymentParameters > 0) {
-                requestPayload.request.payment = {};
-                for (let i = 0; i < paymentParameters.length; i++) {
-                    let paramName = paymentParameters[i];
-                    if (params.get(paramName)){
-                        let elementName = paramName.substring(7, 8).toLowerCase() + paramName.substring(8);
-                        requestPayload.request.payment[elementName] = params.get(paramName);
+            // Handle passenger, specifics and payment parameters
+            for (let j = 0; j < parameterTypes.length; j++) {
+                let parameterType = parameterTypes[j];
+                let ptl = parameterType.length;
+                if (numParameters[parameterType] > 0) {
+                    requestPayload.request[parameterType] = {};
+                    for (let i = 0; i < optParameters[parameterType].length; i++) {
+                        let paramName = optParameters[parameterType][i];
+                        if (params.get(paramName)){
+                            let elementName = paramName.substring(ptl, ptl+1).toLowerCase() + paramName.substring(ptl+1);
+                            requestPayload.request[parameterType][elementName] = params.get(paramName);
+                        }
                     }
                 }
             }
