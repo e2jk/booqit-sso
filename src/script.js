@@ -6,7 +6,14 @@ const passengerParameters = ["passengerFirstName", "passengerLastName", "passeng
 const specificsParameters = ["specificsPassengers", "specificsOxygen", "specificsPerfusion", "specificsInfectionRisk", "specificsWithProbe"];
 const paymentParameters = ["paymentInvoiceTo", "paymentName", "paymentInvoiceAddress"];
 const otherOptParameters = ["transportType", "reason", "dateTime", "dateTimeEnd", "operationDate", "pickup", "dropOff", "info", "vehicleType", "vehicleSpecification", "proOrVolunteer"];
-const optionalParameters = [].concat(["destinationUrl"], passengerParameters, specificsParameters, paymentParameters, otherOptParameters);
+const optionalParameters = [].concat(["destinationUrl", "debug"], passengerParameters, specificsParameters, paymentParameters, otherOptParameters);
+var debugMode = false;
+
+function log(value) {
+    if (debugMode) {
+        console.log(value);
+    }
+}
 
 // Inspired from https://stackoverflow.com/a/11582513/185053 , modified for JSLint
 function getURLParameter(name) {
@@ -27,7 +34,6 @@ function getURLParameter(name) {
 
 function getParam(paramName, params) {
     var parameter = getURLParameter(paramName);
-    // console.log(paramName, parameter);
     if (parameter) {
         params.set(paramName, parameter);
     }
@@ -35,7 +41,6 @@ function getParam(paramName, params) {
 
 function getParams() {
     "use strict";
-    console.log("getParams()");
     let params = new Map()
 
     // Required parameters
@@ -65,9 +70,14 @@ function getParams() {
         getParam(paramName, params);
     }
 
-    console.log("Received parameters:");
+    if (params.get("debug") === "true") {
+        debugMode = true;
+        log("DEBUG MODE ON");
+    }
+
+    log("Received parameters:");
     for (let [key, value] of params) {
-        console.log(key + ' = ' + value)
+        log(key + ' = ' + value)
     }
     return params;
 }
@@ -78,8 +88,6 @@ function updatePage(content) {
 
 function getSSOLink(params) {
     "use strict";
-    console.log("getSSOLink()");
-
     // The base of the payload comes from the required parameters
     let payload = {
         "acceptedTermsOfUse": params.get("acceptedTermsOfUse") === "true",
@@ -96,7 +104,6 @@ function getSSOLink(params) {
     let numPaymentParameters = 0;
     for (let i = 0; i < optionalParameters.length; i++) {
         let paramName = optionalParameters[i];
-        console.log(paramName, params.get(paramName));
         if (params.get(paramName)){
             numOptionalParameters++;
             if (paramName.startsWith("passenger")) {
@@ -161,16 +168,16 @@ function getSSOLink(params) {
                     requestPayload.request[paramName] = params.get(paramName);
                 }
             }
-            console.log(requestPayload);
+            log(requestPayload);
             // Encode the optional parameters into the destination URL
             destinationUrl = "/trips?new=" + encodeURI(JSON.stringify(requestPayload));
         }
-        console.log("destinationUrl ", destinationUrl);
+        log("destinationUrl ", destinationUrl);
 
         // Now that the final destinationUrl is generated, add it to the payload
         payload.destinationUrl = destinationUrl;
     }
-    console.log(payload);
+    log(payload);
 
     const xhr = new XMLHttpRequest();
     const url="https://api.staging.booqitapp.com/v1/sso";
@@ -215,21 +222,18 @@ function getSSOLink(params) {
 
 function redirectToBooqit(ssoUrl) {
     "use strict";
-    console.log("redirectToBooqit() -> " + ssoUrl);
+    log("redirectToBooqit() -> " + ssoUrl);
     const urlMessage = "SSO Successful, redirecting to <a href='" + ssoUrl + "'>" + ssoUrl + "</a>";
     updatePage(urlMessage);
 }
 
 function main(){
     "use strict";
-    console.log("starting");
     var params = getParams();
 
     if (params) {
-        getSSOLink(params);    
+        getSSOLink(params);
     }
-
-    console.log("finished");
 }
 
 main();
