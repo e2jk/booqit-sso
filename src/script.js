@@ -71,15 +71,17 @@ function getParams() {
         getParam(optionalParameters[i], params);
     }
 
+    // Logging in debug mode
     if (params.get("debug") === "true") {
         debugMode = true;
         log("DEBUG MODE ON");
+        let receivedParameters = "Received parameters:\n";
+        for (let [key, value] of params) {
+            receivedParameters += key + ' = ' + value + "\n";
+        }
+        log(receivedParameters);
     }
 
-    log("Received parameters:");
-    for (let [key, value] of params) {
-        log(key + ' = ' + value)
-    }
     return params;
 }
 
@@ -151,7 +153,7 @@ function getSSOLink(params) {
             // Encode the optional parameters into the destination URL
             destinationUrl = "/trips?new=" + encodeURI(JSON.stringify(requestPayload));
         }
-        log("destinationUrl ", destinationUrl);
+        log("destinationUrl: " + destinationUrl);
 
         // Now that the final destinationUrl is generated, add it to the payload
         payload.destinationUrl = destinationUrl;
