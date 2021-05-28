@@ -66,8 +66,7 @@ function getParams() {
 
     // Optional parameters
     for (let i = 0; i < optionalParameters.length; i++) {
-        let paramName = optionalParameters[i];
-        getParam(paramName, params);
+        getParam(optionalParameters[i], params);
     }
 
     if (params.get("debug") === "true") {
