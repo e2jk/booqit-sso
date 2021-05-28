@@ -5,7 +5,8 @@ const supportedLanguages = ['en', 'fr', 'nl'];
 const passengerParameters = ["passengerFirstName", "passengerLastName", "passengerRrNumber", "passengerInternalNumber", "passengerDateOfBirth", "passengerPhoneNumber", "passengerEmail", "passengerMutuality"];
 const specificsParameters = ["specificsPassengers", "specificsOxygen", "specificsPerfusion", "specificsInfectionRisk", "specificsWithProbe"];
 const paymentParameters = ["paymentInvoiceTo", "paymentName", "paymentInvoiceAddress"];
-const optionalParameters = [].concat(["destinationUrl"], passengerParameters, specificsParameters, paymentParameters);
+const otherOptParameters = ["transportType", "reason", "dateTime", "dateTimeEnd", "operationDate", "pickup", "dropOff", "info", "vehicleType", "vehicleSpecification", "proOrVolunteer"];
+const optionalParameters = [].concat(["destinationUrl"], passengerParameters, specificsParameters, paymentParameters, otherOptParameters);
 
 // Inspired from https://stackoverflow.com/a/11582513/185053 , modified for JSLint
 function getURLParameter(name) {
@@ -151,6 +152,13 @@ function getSSOLink(params) {
                         let elementName = paramName.substring(7, 8).toLowerCase() + paramName.substring(8);
                         requestPayload.request.payment[elementName] = params.get(paramName);
                     }
+                }
+            }
+            // Other optional parameters
+            for (let i = 0; i < otherOptParameters.length; i++) {
+                let paramName = otherOptParameters[i];
+                if (params.get(paramName)){
+                    requestPayload.request[paramName] = params.get(paramName);
                 }
             }
             console.log(requestPayload);
