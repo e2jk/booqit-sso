@@ -91,7 +91,7 @@ function getSSOLink(params) {
         let paramName = optionalParameters[i];
         console.log(paramName, params.get(paramName));
         if (params.get(paramName)){
-            numOptionalParameters += 1;
+            numOptionalParameters++;
         }
     }
     if (numOptionalParameters > 0) {
