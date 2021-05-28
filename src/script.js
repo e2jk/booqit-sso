@@ -2,7 +2,7 @@
 
 const mandatoryParameters = ["apikey", "acceptedTermsOfUse", "internalUserId", "userFirstName", "userLastName", "language"];
 const supportedLanguages = ['en', 'fr', 'nl'];
-const optionalParameters = ["destinationUrl", "passengerFirstName", "passengerLastName"];
+const optionalParameters = ["destinationUrl", "passengerFirstName", "passengerLastName", "passengerRrNumber", "passengerInternalNumber", "passengerDateOfBirth", "passengerPhoneNumber", "passengerEmail", "passengerMutuality"];
 
 // Inspired from https://stackoverflow.com/a/11582513/185053 , modified for JSLint
 function getURLParameter(name) {
@@ -86,18 +86,18 @@ function getSSOLink(params) {
     };
 
     // Handle the optional parameters
-    let numOptionalParametersPresent = 0;
+    let numOptionalParameters = 0;
     for (let i = 0; i < optionalParameters.length; i++) {
         let paramName = optionalParameters[i];
         console.log(paramName, params.get(paramName));
         if (params.get(paramName)){
-            numOptionalParametersPresent += 1;
+            numOptionalParameters += 1;
         }
     }
-    if (numOptionalParametersPresent > 0) {
+    if (numOptionalParameters > 0) {
         // We assume that additional parameters are meant to pass info for a new trip, not for restrictions (currently unsupported)
         let destinationUrl = "";
-        if (params.get("destinationUrl") && numOptionalParametersPresent === 1) {
+        if (params.get("destinationUrl") && numOptionalParameters === 1) {
             // Only respect the destinationUrl if it is the only optional parameter passed, otherwise the rest of the parameters need to be passed as extra payload in the return URL
             destinationUrl = params.get("destinationUrl");
         } else {
