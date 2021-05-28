@@ -4,7 +4,8 @@ const mandatoryParameters = ["apikey", "acceptedTermsOfUse", "internalUserId", "
 const supportedLanguages = ['en', 'fr', 'nl'];
 const passengerParameters = ["passengerFirstName", "passengerLastName", "passengerRrNumber", "passengerInternalNumber", "passengerDateOfBirth", "passengerPhoneNumber", "passengerEmail", "passengerMutuality"];
 const specificsParameters = ["specificsPassengers", "specificsOxygen", "specificsPerfusion", "specificsInfectionRisk", "specificsWithProbe"];
-const optionalParameters = [].concat(["destinationUrl"], passengerParameters, specificsParameters);
+const paymentParameters = ["paymentInvoiceTo", "paymentName", "paymentInvoiceAddress"];
+const optionalParameters = [].concat(["destinationUrl"], passengerParameters, specificsParameters, paymentParameters);
 
 // Inspired from https://stackoverflow.com/a/11582513/185053 , modified for JSLint
 function getURLParameter(name) {
@@ -91,6 +92,7 @@ function getSSOLink(params) {
     let numOptionalParameters = 0;
     let numPassengerParameters = 0;
     let numSpecificsParameters = 0;
+    let numPaymentParameters = 0;
     for (let i = 0; i < optionalParameters.length; i++) {
         let paramName = optionalParameters[i];
         console.log(paramName, params.get(paramName));
@@ -101,6 +103,9 @@ function getSSOLink(params) {
             }
             if (paramName.startsWith("specifics")) {
                 numSpecificsParameters++;
+            }
+            if (paramName.startsWith("payment")) {
+                numPaymentParameters++;
             }
         }
     }
@@ -137,12 +142,22 @@ function getSSOLink(params) {
                     }
                 }
             }
+            // Handle "payment" parameters
+            if (numPaymentParameters > 0) {
+                requestPayload.request.payment = {};
+                for (let i = 0; i < paymentParameters.length; i++) {
+                    let paramName = paymentParameters[i];
+                    if (params.get(paramName)){
+                        let elementName = paramName.substring(7, 8).toLowerCase() + paramName.substring(8);
+                        requestPayload.request.payment[elementName] = params.get(paramName);
+                    }
+                }
+            }
             console.log(requestPayload);
             // Encode the optional parameters into the destination URL
             destinationUrl = "/trips?new=" + encodeURI(JSON.stringify(requestPayload));
         }
         console.log("destinationUrl ", destinationUrl);
-
 
         // Now that the final destinationUrl is generated, add it to the payload
         payload.destinationUrl = destinationUrl;
