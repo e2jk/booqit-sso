@@ -2,7 +2,8 @@
 
 const mandatoryParameters = ["apikey", "acceptedTermsOfUse", "internalUserId", "userFirstName", "userLastName", "language"];
 const supportedLanguages = ['en', 'fr', 'nl'];
-const optionalParameters = ["destinationUrl", "passengerFirstName", "passengerLastName", "passengerRrNumber", "passengerInternalNumber", "passengerDateOfBirth", "passengerPhoneNumber", "passengerEmail", "passengerMutuality"];
+const passengerParameters = ["passengerFirstName", "passengerLastName", "passengerRrNumber", "passengerInternalNumber", "passengerDateOfBirth", "passengerPhoneNumber", "passengerEmail", "passengerMutuality"];
+const optionalParameters = [].concat(["destinationUrl"], passengerParameters);
 
 // Inspired from https://stackoverflow.com/a/11582513/185053 , modified for JSLint
 function getURLParameter(name) {
@@ -109,12 +110,13 @@ function getSSOLink(params) {
                 "request": {
                 }
             };
+            // Handle passenger parameters
             if (numPassengerParameters > 0) {
                 requestPayload.request.passenger = {};
             }
-            for (let i = 0; i < optionalParameters.length; i++) {
-                let paramName = optionalParameters[i];
-                if (paramName.startsWith("passenger") && params.get(paramName)){
+            for (let i = 0; i < passengerParameters.length; i++) {
+                let paramName = passengerParameters[i];
+                if (params.get(paramName)){
                     let elementName = paramName.substring(9, 10).toLowerCase() + paramName.substring(10);
                     requestPayload.request.passenger[elementName] = params.get(paramName);
                 }
