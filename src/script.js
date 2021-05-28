@@ -2,6 +2,7 @@
 
 const mandatoryParameters = ["apikey", "acceptedTermsOfUse", "internalUserId", "firstName", "lastName", "language"];
 const supportedLanguages = ['en', 'fr', 'nl'];
+const optionalParameters = ["destinationUrl", "lastName", "firstName"];
 
 // Inspired from https://stackoverflow.com/a/11582513/185053 , modified for JSLint
 function getURLParameter(name) {
@@ -55,8 +56,10 @@ function getParams() {
     }
 
     // Optional parameters
-    getParam("lastName", params);
-    getParam("firstName", params);
+    for (let i = 0; i < optionalParameters.length; i++) {
+        let paramName = optionalParameters[i];
+        getParam(paramName, params);
+    }
 
     console.log("Received parameters:");
     for (let [key, value] of params) {
@@ -73,7 +76,7 @@ function getSSOLink(params) {
     "use strict";
     console.log("getSSOLink()");
 
-    //TODO: pass these as required parameters
+    // The base of the payload comes from the required parameters
     let payload = {
         "acceptedTermsOfUse": params.get("acceptedTermsOfUse") === "true",
         "internalUserId": params.get("internalUserId"),
@@ -81,6 +84,29 @@ function getSSOLink(params) {
         "lastName": params.get("lastName"),
         "language": params.get("language")
     };
+    
+    // Handle the optional parameters
+    let optionalParametersPresent = false;
+    for (let i = 0; i < optionalParameters.length; i++) {
+        let paramName = optionalParameters[i];
+        if (params.get(paramName) !== undefined){
+            optionalParametersPresent = true;
+            break;
+        }
+    }
+    if (optionalParametersPresent) {
+        // Default destinationUrl if not provided
+        // We assume that additional parameters are meant to pass info for a new trip, not for restrictions (currently unsupported)
+        let destinationUrl = params.get("destinationUrl");
+        if (!destinationUrl) {
+            destinationUrl = "/trips?new=";
+        }
+        console.log("destinationUrl ", destinationUrl);
+
+        // Now that the final destinationUrl is generated, add it to the payload
+        payload.destinationUrl = destinationUrl;
+    }
+    console.log(payload);
 
     const xhr = new XMLHttpRequest();
     const url="https://api.staging.booqitapp.com/v1/sso";
