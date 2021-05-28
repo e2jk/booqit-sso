@@ -87,11 +87,15 @@ function getSSOLink(params) {
 
     // Handle the optional parameters
     let numOptionalParameters = 0;
+    let numPassengerParameters = 0;
     for (let i = 0; i < optionalParameters.length; i++) {
         let paramName = optionalParameters[i];
         console.log(paramName, params.get(paramName));
         if (params.get(paramName)){
             numOptionalParameters++;
+            if (paramName.startsWith("passenger")) {
+                numPassengerParameters++;
+            }
         }
     }
     if (numOptionalParameters > 0) {
@@ -105,14 +109,15 @@ function getSSOLink(params) {
                 "request": {
                 }
             };
-            if (params.get("passengerFirstName") || params.get("passengerLastName")) {
+            if (numPassengerParameters > 0) {
                 requestPayload.request.passenger = {};
             }
-            if (params.get("passengerFirstName")) {
-                requestPayload.request.passenger.firstName = params.get("passengerFirstName");
-            }
-            if (params.get("passengerLastName")) {
-                requestPayload.request.passenger.lastName = params.get("passengerLastName");
+            for (let i = 0; i < optionalParameters.length; i++) {
+                let paramName = optionalParameters[i];
+                if (paramName.startsWith("passenger") && params.get(paramName)){
+                    let elementName = paramName.substring(9, 10).toLowerCase() + paramName.substring(10);
+                    requestPayload.request.passenger[elementName] = params.get(paramName);
+                }
             }
             console.log(requestPayload);
             // Encode the optional parameters into the destination URL
