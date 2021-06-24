@@ -3,7 +3,7 @@
 const mandatoryParameters = ["apikey", "acceptedTermsOfUse", "internalUserId", "userFirstName", "userLastName", "language"];
 const supportedLanguages = ['en', 'fr', 'nl'];
 const optParameters = {
-    "passenger": ["passengerFirstName", "passengerLastName", "passengerRrNumber", "passengerInternalNumber", "passengerDateOfBirth", "passengerPhoneNumber", "passengerEmail", "passengerMutuality"],
+    "passenger": ["passengerFirstName", "passengerLastName", "passengerRrNumber", "passengerInternalNumber", "passengerDateOfBirth", "passengerDateOfBirthDD-MM-YY", "passengerPhoneNumber", "passengerEmail", "passengerMutuality"],
     "specifics": ["specificsPassengers", "specificsOxygen", "specificsPerfusion", "specificsInfectionRisk", "specificsWithProbe"],
     "payment": ["paymentInvoiceTo", "paymentName", "paymentInvoiceAddress"]
 };
@@ -73,6 +73,19 @@ function getParams() {
     // Optional parameters
     for (let i = 0; i < optionalParameters.length; i++) {
         getParam(optionalParameters[i], params);
+    }
+
+    // Handle specific parameters
+    if (params.has("passengerDateOfBirthDD-MM-YY")) {
+        // Date of birth must be in the format DDMMYYYY for Booqit
+        var d = params.get("passengerDateOfBirthDD-MM-YY");
+        var yy = d.substr(6,2);
+        var currentYear = new Date().getFullYear().toString().substr(-2);
+        var newdate  = d.substr(0,2) + d.substr(3,2);
+        // A 2-digit date lower than the current year's 2 digits is assumed to be this century, a higher value from the previous century
+        newdate += (yy < currentYear+1) ? '20' + yy : '19' + yy;
+        params.set("passengerDateOfBirth", newdate);
+        params.delete("passengerDateOfBirthDD-MM-YY");
     }
 
     // Logging in debug mode
