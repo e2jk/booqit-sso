@@ -1,6 +1,6 @@
 /*jslint browser: true, white */
 
-const mandatoryParameters = ["apikey", "acceptedTermsOfUse", "internalUserId", "userFirstName", "userLastName", "language"];
+const mandatoryParameters = ["ssoUrl", "apikey", "acceptedTermsOfUse", "internalUserId", "userFirstName", "userLastName", "language"];
 const supportedLanguages = ['en', 'fr', 'nl'];
 const optParameters = {
     "passenger": ["passengerFirstName", "passengerLastName", "passengerRrNumber", "passengerInternalNumber", "passengerDateOfBirth", "passengerDateOfBirthDD-MM-YY", "passengerDateOfBirthDD-MM-YYYY", "passengerPhoneNumber", "passengerEmail", "passengerMutuality"],
@@ -185,7 +185,7 @@ function getSSOLink(params) {
     log(payload);
 
     const xhr = new XMLHttpRequest();
-    const url="https://api.staging.booqitapp.com/v1/sso";
+    const url = params.get("ssoUrl");
     xhr.open("POST", url);
     xhr.setRequestHeader('Authorization', 'key ' + params.get("apikey") );
     xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
