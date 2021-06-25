@@ -3,7 +3,7 @@
 const mandatoryParameters = ["apikey", "acceptedTermsOfUse", "internalUserId", "userFirstName", "userLastName", "language"];
 const supportedLanguages = ['en', 'fr', 'nl'];
 const optParameters = {
-    "passenger": ["passengerFirstName", "passengerLastName", "passengerRrNumber", "passengerInternalNumber", "passengerDateOfBirth", "passengerDateOfBirthDD-MM-YY", "passengerPhoneNumber", "passengerEmail", "passengerMutuality"],
+    "passenger": ["passengerFirstName", "passengerLastName", "passengerRrNumber", "passengerInternalNumber", "passengerDateOfBirth", "passengerDateOfBirthDD-MM-YY", "passengerDateOfBirthDD-MM-YYYY", "passengerPhoneNumber", "passengerEmail", "passengerMutuality"],
     "specifics": ["specificsPassengers", "specificsOxygen", "specificsPerfusion", "specificsInfectionRisk", "specificsWithProbe"],
     "payment": ["paymentInvoiceTo", "paymentName", "paymentInvoiceAddress"]
 };
@@ -76,6 +76,13 @@ function getParams() {
     }
 
     // Handle specific parameters
+    if (params.has("passengerDateOfBirthDD-MM-YYYY")) {
+        // Date of birth must be in the format DDMMYYYY for Booqit
+        var d = params.get("passengerDateOfBirthDD-MM-YYYY");
+        var newdate  = d.substr(0,2) + d.substr(3,2) + d.substr(6,4);
+        params.set("passengerDateOfBirth", newdate);
+        params.delete("passengerDateOfBirthDD-MM-YYYY");
+    }
     if (params.has("passengerDateOfBirthDD-MM-YY")) {
         // Date of birth must be in the format DDMMYYYY for Booqit
         var d = params.get("passengerDateOfBirthDD-MM-YY");
