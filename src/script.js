@@ -8,7 +8,7 @@ const optParameters = {
     "payment": ["paymentInvoiceTo", "paymentName", "paymentInvoiceAddress"]
 };
 const otherOptParameters = ["transportType", "reason", "dateTime", "dateTimeEnd", "operationDate", "pickup", "dropOff", "info", "vehicleType", "vehicleSpecification", "proOrVolunteer"];
-const optionalParameters = [].concat(["destinationUrl", "debug"], optParameters["passenger"], optParameters["specifics"], optParameters["payment"], otherOptParameters);
+const optionalParameters = [].concat(["destinationUrl", "debug", "redirect"], optParameters["passenger"], optParameters["specifics"], optParameters["payment"], otherOptParameters);
 var debugMode = false;
 
 function log(value) {
@@ -205,7 +205,7 @@ function getSSOLink(params) {
                 }
                 if(response.hasOwnProperty("data") && response.data.hasOwnProperty("ssoUrl")) {
                     const ssoUrl = response.data.ssoUrl;
-                    redirectToBooqit(ssoUrl);
+                    redirectToBooqit(ssoUrl, params.get("redirect"));
                 } else {
                     const errorMessage = "Error, could not identify the ssoUrl.<br>responseText: '" + xhr.responseText + "'<br>Please contact IT support.";
                     console.error(errorMessage);
@@ -225,11 +225,16 @@ function getSSOLink(params) {
     }
 }
 
-function redirectToBooqit(ssoUrl) {
+function redirectToBooqit(ssoUrl, redirect) {
     "use strict";
     log("redirectToBooqit() -> " + ssoUrl);
-    const urlMessage = "SSO Successful, redirecting to <a href='" + ssoUrl + "' target='_blank'>" + ssoUrl + "</a>";
-    updatePage(urlMessage);
+    if (redirect === "false") {
+        const urlMessage = "SSO Successful, redirecting to <a href='" + ssoUrl + "' target='_blank'>" + ssoUrl + "</a>";
+        updatePage(urlMessage);
+    } else {
+        // Redirect directly to the SSO page
+        window.location = ssoUrl;
+    }
 }
 
 function main(){
