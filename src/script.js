@@ -66,7 +66,7 @@ function getParams() {
     }
     if (errorMessage) {
         console.error(errorMessage);
-        updatePage("<ul>" + errorMessage + "</ul><br>Please contact IT support.");
+        updatePage("<h2>Invalid configuration</h2><ul>" + errorMessage + "</ul><br>Please contact IT support.");
         return null;
     }
 
@@ -199,7 +199,7 @@ function getSSOLink(params) {
                 try {
                     var response = JSON.parse(xhr.responseText);
                 } catch (e) {
-                    const errorMessage = "Error, could not parse the JSON content sent by the server.<br>responseText: '" + xhr.responseText + "'<br>Exception: '" + e + "'<br>Please contact IT support.";
+                    const errorMessage = "<h2>Error</h2>Could not parse the JSON content sent by the server.<br>responseText: <pre>" + xhr.responseText + "</pre><br>Exception: <pre>" + e + "</pre><br>Please contact IT support.";
                     console.error(errorMessage);
                     updatePage(errorMessage);
                 }
@@ -207,7 +207,7 @@ function getSSOLink(params) {
                     const ssoUrl = response.data.ssoUrl;
                     redirectToBooqit(ssoUrl, params.get("redirect"));
                 } else {
-                    const errorMessage = "Error, could not identify the ssoUrl.<br>responseText: '" + xhr.responseText + "'<br>Please contact IT support.";
+                    const errorMessage = "<h2>Error</h2>Could not identify the ssoUrl.<br>responseText: <pre>" + xhr.responseText + "</pre><br>Please contact IT support.";
                     console.error(errorMessage);
                     updatePage(errorMessage);
                 }
@@ -217,7 +217,7 @@ function getSSOLink(params) {
                 if (status === 401) {
                     extraText = " Please check if the provided API key is valid.";
                 }
-                const errorMessage = "Error, status code " + status + ", message '" + xhr.responseText + "'." + extraText + "<br>Please contact IT support.";
+                const errorMessage = "<h2>Error</h2>Status code " + status + ", message: <pre>" + xhr.responseText + "</pre>" + extraText + "<br>Please contact IT support.";
                 console.error(errorMessage);
                 updatePage(errorMessage);
             }
