@@ -7,6 +7,7 @@
 
 * Build the Docker image (first two steps listed below)
 * Run ``docker run -it --rm -p 8080:80 -e PUID=1000 -e PGID=1000 --name booqit-sso -v `pwd`/src/:/config/www/ e2jk/booqit-sso`` in the root folder and access from your browser at http://localhost:8080/
+* Alternatively you can also build and run the development configuration with docker-compose: ``docker-compose -f docker-compose.yml -f "docker-compose.debug.yml" up -d --build``
 
 ### Quick and dirty:
 
