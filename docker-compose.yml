@@ -1,0 +1,15 @@
+version: '3.4'
+
+services:
+  booqit-sso:
+    image: e2jk/booqit-sso
+    container_name: booqit-sso
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=UTC
+    ports:
+      - "80"
+    build:
+      context: .
+      dockerfile: ./Dockerfile
